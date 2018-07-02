@@ -21,7 +21,8 @@ API_KEY = os.environ['GOOGLE_MAPS_API_KEY']
 
 
 class VacationDrivingPlanner:
-    def __init__(self):
+    def __init__(self, gmaps_api_key):
+        self.gmaps_api_key = gmaps_api_key
         self.driving_filter = DrivingFilter()
         self.origin_cities = OriginCities()
         self.destination_cities = DestinationCities()
@@ -35,7 +36,7 @@ class VacationDrivingPlanner:
     def get_driving_distances(self, origin_cities: List[str], destination_cities: List[str]) -> List:
         driving_results = []
 
-        gmaps = googlemaps.Client(key=API_KEY)
+        gmaps = googlemaps.Client(key=self.gmaps_api_key)
         for origin_city in origin_cities:
             for destination_city in destination_cities:
                 directions_result = gmaps.directions(origin_city, destination_city, mode='driving')
@@ -60,6 +61,15 @@ class VacationDrivingPlanner:
 
 
 class OriginCities:
+    def __init__(self, load_from: str='default'):
+        self.city_strategy = None
+        if load_from == 'default':
+            self.city_strategy = self._get_cities_default
+        elif load_from == 'csv':
+            self.city_strategy = self._get_cities_from_csv
+        else:
+            raise RuntimeError("Invalid origin city loader" + str(load_from))
+
     def get_cities(self) -> List[str]:
         return self._get_cities_default()
 
@@ -71,6 +81,15 @@ class OriginCities:
 
 
 class DestinationCities:
+    def __init__(self, load_from: str='default'):
+        self.city_strategy = None
+        if load_from == 'default':
+            self.city_strategy = self._get_cities_default
+        elif load_from == 'csv':
+            self.city_strategy = self._get_cities_from_csv
+        else:
+            raise RuntimeError("Invalid origin city loader" + str(load_from))
+
     def get_cities(self) -> List[str]:
         return self._get_cities_default()
 
@@ -101,5 +120,5 @@ class DrivingFilter:
 
 
 if __name__ == '__main__':
-    vdp = VacationDrivingPlanner()
+    vdp = VacationDrivingPlanner(API_KEY)
     vdp.run()
