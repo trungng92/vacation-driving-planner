@@ -17,15 +17,13 @@ import os
 
 import googlemaps
 
-API_KEY = os.environ['GOOGLE_MAPS_API_KEY']
-
 
 class VacationDrivingPlanner:
-    def __init__(self, gmaps_api_key):
+    def __init__(self, gmaps_api_key: str, load_from_origin: str='default', load_from_dest: str='default'):
         self.gmaps_api_key = gmaps_api_key
         self.driving_filter = DrivingFilter()
-        self.origin_cities = OriginCities()
-        self.destination_cities = DestinationCities()
+        self.origin_cities = OriginCities(load_from_origin)
+        self.destination_cities = DestinationCities(load_from_dest)
 
     def get_origin_cities(self):
         return self.origin_cities.get_cities()
@@ -36,10 +34,10 @@ class VacationDrivingPlanner:
     def get_driving_distances(self, origin_cities: List[str], destination_cities: List[str]) -> List:
         driving_results = []
 
-        gmaps = googlemaps.Client(key=self.gmaps_api_key)
+        gmaps_client = googlemaps.Client(key=self.gmaps_api_key)
         for origin_city in origin_cities:
             for destination_city in destination_cities:
-                directions_result = gmaps.directions(origin_city, destination_city, mode='driving')
+                directions_result = gmaps_client.directions(origin_city, destination_city, mode='driving')
                 driving_results.append(directions_result)
 
         return driving_results
@@ -77,7 +75,7 @@ class OriginCities:
         pass
 
     def _get_cities_default(self):
-        return ['Virginia Beach, Virginia', 'Atlanta, Georgia']
+        return ['Lakeland, Florida', 'Cary, North Carolina']
 
 
 class DestinationCities:
@@ -97,7 +95,7 @@ class DestinationCities:
         pass
 
     def _get_cities_default(self):
-        return ['Lakeland, Florida', 'Cary, North Carolina']
+        return ['Virginia Beach, Virginia', 'Atlanta, Georgia']
 
 
 class DrivingFilter:
@@ -120,5 +118,6 @@ class DrivingFilter:
 
 
 if __name__ == '__main__':
+    API_KEY = os.environ['GOOGLE_MAPS_API_KEY']
     vdp = VacationDrivingPlanner(API_KEY)
     vdp.run()
